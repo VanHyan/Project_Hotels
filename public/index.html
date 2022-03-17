@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Google</title>
+    <script async defer src="https://apis.google.com/js/api:client.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+<button id="google-auth-button">Google</button>
+<fb:login-button
+        scope="public_profile,email"
+        onlogin="checkLoginState">
+</fb:login-button>
+
+<script>
+    var REACT_APP_GOOGLE_CLIENT_ID = '737846858998-viecltm50rvrdn95s4vcfarl6jk62ug1.apps.googleusercontent.com';
+    document.getElementById('google-auth-button').addEventListener('click', () => {
+        const { gapi } = window;
+        gapi.load('auth2', () => {
+            gapi.auth2.authorize({
+                client_id: REACT_APP_GOOGLE_CLIENT_ID,
+                scope: [
+                    'https://www.googleapis.com/auth/userinfo.email',
+                    'https://www.googleapis.com/auth/userinfo.profile',
+                ].join(' '),
+                response_type: 'id_token permission'
+            }, (response) => {
+                console.log(response)
+                if (response.error) {
+                    return;
+                }
+                const { access_token: accessToken } = response
+                fetch('http://localhost:4000/users/google?accessToken=' + accessToken)
+            });
+        });
+    })
+</script>
+<script>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId      : '469760267987077',
+            xfbml      : true,
+            version    : 'v12.0'
+        });
+
+        FB.AppEvents.logPageView();
+
+    };
+    function checkLoginState (data){
+        axios.post('http://localhost:4000/users/facebook', data).then((a)=>{
+            console.log(a)
+        })
+    }
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
+</body>
+</html>
